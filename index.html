@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClawHub 技能榜（中文）</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #121c2f;
+      --panel-2: #1b2842;
+      --text: #e8edf7;
+      --sub: #9eb0cf;
+      --brand: #56b6ff;
+      --brand-2: #7cf7d4;
+      --line: #263756;
+      --ok: #2cc98a;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #1a2d4f 0%, transparent 60%),
+        radial-gradient(1200px 700px at 100% 0%, #15374a 0%, transparent 55%),
+        var(--bg);
+      min-height: 100vh;
+    }
+
+    .container {
+      width: min(1200px, 92vw);
+      margin: 36px auto 56px;
+    }
+
+    .hero {
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(150deg, rgba(86, 182, 255, 0.12), rgba(124, 247, 212, 0.06));
+      backdrop-filter: blur(4px);
+    }
+
+    h1 { margin: 0 0 10px; font-size: 28px; }
+    .subtitle { margin: 0; color: var(--sub); line-height: 1.6; }
+    .subtitle a { color: var(--brand); text-decoration: none; }
+    .subtitle a:hover { text-decoration: underline; }
+
+    .toolbar {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 10px;
+    }
+
+    .input,
+    .select,
+    .btn {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 10px;
+      height: 42px;
+      padding: 0 14px;
+      font-size: 14px;
+    }
+
+    .input:focus,
+    .select:focus {
+      outline: 1px solid var(--brand);
+      border-color: var(--brand);
+    }
+
+    .meta {
+      margin: 16px 2px 0;
+      color: var(--sub);
+      font-size: 14px;
+    }
+
+    .grid {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
+    }
+
+    .pagination {
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .page-btn {
+      min-width: 88px;
+      height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .page-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .page-info {
+      color: var(--sub);
+      font-size: 14px;
+      min-width: 120px;
+      text-align: center;
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      min-height: 220px;
+    }
+
+    .name {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.3;
+    }
+
+    .slug {
+      margin-top: 4px;
+      color: var(--sub);
+      font-size: 12px;
+      word-break: break-all;
+    }
+
+    .summary {
+      margin: 10px 0 12px;
+      color: #d5def1;
+      line-height: 1.5;
+      font-size: 14px;
+      flex: 1;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 8px;
+    }
+
+    .stat .k { color: var(--sub); font-size: 12px; }
+    .stat .v { margin-top: 4px; font-size: 15px; font-weight: 600; }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+
+    .btn-download {
+      background: linear-gradient(120deg, var(--brand), var(--brand-2));
+      border: none;
+      color: #052338;
+      font-weight: 700;
+      flex: 1;
+    }
+    .btn-detail {
+      color: var(--text);
+      width: 110px;
+    }
+
+    .loading,
+    .error,
+    .empty {
+      margin-top: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      padding: 18px;
+      color: var(--sub);
+    }
+
+    .ok-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--ok);
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    @media (max-width: 780px) {
+      .toolbar {
+        grid-template-columns: 1fr;
+      }
+      .btn-detail { width: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <h1>ClawHub-CN</h1>
+
+      <div class="toolbar">
+        <input id="searchInput" class="input" placeholder="按名称 / slug / 简介筛选" />
+        <select id="sortSelect" class="select" aria-label="排序方式">
+          <option value="downloads">按下载量</option>
+          <option value="stars">按星标数</option>
+          <option value="updatedAt">按更新时间</option>
+          <option value="name">按名称</option>
+        </select>
+        <button id="reloadBtn" class="btn">刷新数据</button>
+      </div>
+
+      <div id="meta" class="meta"></div>
+    </section>
+
+    <div id="loading" class="loading">正在加载技能列表...</div>
+    <div id="error" class="error" hidden></div>
+    <div id="empty" class="empty" hidden>没有匹配结果。</div>
+    <section id="grid" class="grid" hidden></section>
+    <div id="pagination" class="pagination" hidden>
+      <button id="prevPageBtn" class="page-btn" type="button">上一页</button>
+      <div id="pageInfo" class="page-info"></div>
+      <button id="nextPageBtn" class="page-btn" type="button">下一页</button>
+    </div>
+  </div>
+
+  <script>
+    const SOURCE_API = "https://wry-manatee-359.convex.site/api/v1/skills?sort=downloads&limit=500";
+    const SOURCE_PAGE = "https://clawhub.ai/skills?sort=downloads";
+    const DOWNLOAD_API = "https://wry-manatee-359.convex.site/api/v1/download?slug=";
+    const DETAIL_PAGE = "./detail.html?slug=";
+
+    const state = {
+      raw: [],
+      filtered: [],
+      query: "",
+      sortBy: "downloads",
+      page: 1,
+      pageSize: 12,
+      fetchedAt: null
+    };
+
+    const el = {
+      searchInput: document.getElementById("searchInput"),
+      sortSelect: document.getElementById("sortSelect"),
+      reloadBtn: document.getElementById("reloadBtn"),
+      meta: document.getElementById("meta"),
+      loading: document.getElementById("loading"),
+      error: document.getElementById("error"),
+      empty: document.getElementById("empty"),
+      grid: document.getElementById("grid"),
+      pagination: document.getElementById("pagination"),
+      prevPageBtn: document.getElementById("prevPageBtn"),
+      nextPageBtn: document.getElementById("nextPageBtn"),
+      pageInfo: document.getElementById("pageInfo")
+    };
+
+    function formatNum(v) {
+      return Number(v || 0).toLocaleString("en-US");
+    }
+
+    function formatTime(ms) {
+      if (!ms) return "-";
+      return new Date(ms).toLocaleString("zh-CN", { hour12: false });
+    }
+
+    function escapeHtml(text) {
+      return String(text || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function sortItems(items) {
+      const arr = [...items];
+      if (state.sortBy === "name") {
+        arr.sort((a, b) => String(a.displayName || "").localeCompare(String(b.displayName || "")));
+      } else if (state.sortBy === "stars") {
+        arr.sort((a, b) => (b.stats?.stars || 0) - (a.stats?.stars || 0));
+      } else if (state.sortBy === "updatedAt") {
+        arr.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+      } else {
+        arr.sort((a, b) => (b.stats?.downloads || 0) - (a.stats?.downloads || 0));
+      }
+      return arr;
+    }
+
+    function applyFilter() {
+      const q = state.query.trim().toLowerCase();
+      const source = q
+        ? state.raw.filter((item) => {
+            const text = [item.displayName, item.slug, item.summary].join(" ").toLowerCase();
+            return text.includes(q);
+          })
+        : state.raw;
+      state.filtered = sortItems(source);
+      state.page = 1;
+      render();
+    }
+
+    function renderMeta() {
+      const count = state.filtered.length;
+      const total = state.raw.length;
+      const fetched = state.fetchedAt ? formatTime(state.fetchedAt) : "-";
+      el.meta.innerHTML =
+        `<span class="ok-dot"></span>共 ${count} / ${total} 个技能`;
+    }
+
+    function render() {
+      renderMeta();
+      el.loading.hidden = true;
+      el.error.hidden = true;
+
+      if (!state.filtered.length) {
+        el.grid.hidden = true;
+        el.pagination.hidden = true;
+        el.empty.hidden = false;
+        return;
+      }
+
+      el.empty.hidden = true;
+      el.grid.hidden = false;
+      el.pagination.hidden = false;
+
+      const totalPages = Math.max(1, Math.ceil(state.filtered.length / state.pageSize));
+      state.page = Math.min(state.page, totalPages);
+      const startIndex = (state.page - 1) * state.pageSize;
+      const endIndex = startIndex + state.pageSize;
+      const pageItems = state.filtered.slice(startIndex, endIndex);
+
+      el.grid.innerHTML = pageItems.map((item) => {
+        const slug = escapeURIComponent(item.slug);
+        const detailUrl = `${DETAIL_PAGE}${slug}`;
+        const downloadUrl = `${DOWNLOAD_API}${slug}`;
+        return `
+          <article class="card">
+            <h2 class="name">${escapeHtml(item.displayName || item.slug)}</h2>
+            <div class="slug">/${escapeHtml(item.slug)}</div>
+            <p class="summary">${escapeHtml(item.summary || "")}</p>
+            <div class="stats">
+              <div class="stat"><div class="k">下载量</div><div class="v">${formatNum(item.stats?.downloads)}</div></div>
+              <div class="stat"><div class="k">星标</div><div class="v">${formatNum(item.stats?.stars)}</div></div>
+              <div class="stat"><div class="k">当前安装</div><div class="v">${formatNum(item.stats?.installsCurrent)}</div></div>
+              <div class="stat"><div class="k">版本数</div><div class="v">${formatNum(item.stats?.versions)}</div></div>
+            </div>
+            <div class="actions">
+              <a class="btn btn-download" href="${downloadUrl}" target="_blank" rel="noopener noreferrer">下载 ZIP</a>
+              <a class="btn btn-detail" href="${detailUrl}" target="_blank" rel="noopener noreferrer">详情</a>
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      el.pageInfo.textContent = `第 ${state.page} / ${totalPages} 页`;
+      el.prevPageBtn.disabled = state.page <= 1;
+      el.nextPageBtn.disabled = state.page >= totalPages;
+    }
+
+    function escapeURIComponent(value) {
+      return encodeURIComponent(String(value || "").trim());
+    }
+
+    async function loadSkills() {
+      el.loading.hidden = false;
+      el.error.hidden = true;
+      el.empty.hidden = true;
+      el.grid.hidden = true;
+      el.pagination.hidden = true;
+
+      try {
+        const res = await fetch(SOURCE_API, { headers: { Accept: "application/json" } });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        state.raw = Array.isArray(data.items) ? data.items : [];
+        state.fetchedAt = Date.now();
+        state.page = 1;
+        applyFilter();
+      } catch (err) {
+        el.loading.hidden = true;
+        el.grid.hidden = true;
+        el.empty.hidden = true;
+        el.error.hidden = false;
+        el.error.textContent = "加载失败，请稍后重试。错误信息：" + (err && err.message ? err.message : String(err));
+      }
+    }
+
+    el.searchInput.addEventListener("input", (evt) => {
+      state.query = evt.target.value || "";
+      applyFilter();
+    });
+
+    el.sortSelect.addEventListener("change", (evt) => {
+      state.sortBy = evt.target.value || "downloads";
+      applyFilter();
+    });
+
+    el.reloadBtn.addEventListener("click", () => {
+      loadSkills();
+    });
+
+    el.prevPageBtn.addEventListener("click", () => {
+      if (state.page <= 1) return;
+      state.page -= 1;
+      render();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    el.nextPageBtn.addEventListener("click", () => {
+      const totalPages = Math.max(1, Math.ceil(state.filtered.length / state.pageSize));
+      if (state.page >= totalPages) return;
+      state.page += 1;
+      render();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    loadSkills();
+  </script>
+</body>
+</html>
